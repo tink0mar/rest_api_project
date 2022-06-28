@@ -1,0 +1,44 @@
+version: "3.3"
+
+services:
+  
+  postgres:
+    image: postgres:13-alpine
+    container_name: sl-postgres
+    environment:
+      POSTGRES_USER: hacker_news_stories
+      POSTGRES_DB: hacker_news_stories
+      POSTGRES_PASSWORD: hacker_news_stories
+    volumes:
+      - sl-postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  
+#
+#  web:
+#    build: .
+#    image: node:16-alpine
+#    container_name: koajs
+#    command: npm run start
+#    depends_on:
+#      - postgres
+#    environment:
+#      - POSTGRES_HOST=postgres
+#      - POSTGRES_USER=hacker_news_stories
+#      - POSTGRES_DB=hacker_news_stories
+#      - POSTGRES_PASSWORD=hacker_news_stories
+#      - POSTGRES_PORT=5432
+#    volumes:
+#      - .:/usr/js_work
+#      - node_modules:/usr/node_modules
+#    ports:
+#      - 3000:3000
+#  
+
+volumes:
+  sl-postgres:
+    driver: local
+  # node_modules:
+  #   driver: local
+  # .: 
+  #   driver: local
