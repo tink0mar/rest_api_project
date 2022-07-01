@@ -6,9 +6,17 @@ This is rest api
 
 Rest api can be run with
 
+First you have to set database 
+
 ```
 $ docker-compose up
 ```
+Run server
+```
+$ sudo npm install
+$ npm run start
+```
+
 
 ## Automation Tests ##
 
