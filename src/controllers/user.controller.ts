@@ -1,61 +1,69 @@
 import Users from '../models/Users'
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken'
 import type { Context } from 'koa';
 import { CustomError } from '../middlewares/error';
+import { KoaContext } from '../types/types';
+import { addUser, checkPassword, getToken, findUser} from '../services/users.service'
+import { RegisterRes, UserDataReq, LoginRes} from '../types/users.types'
 
 // add user with encrypted password to database
 
-type UserData = {
-    name: string,
-    password: string
-}
-
-export const registerUser = async (ctx: Context) => {
+export const registerUser = async (ctx: KoaContext<UserDataReq, RegisterRes>) => {
     
-    const inputData: UserData = ctx.request.body;
+    // check user in db
 
-    const user = await Users.query().findOne({
-        username: ctx.request.body.username
-    });
+    if (!ctx.request.body) {
+        throw new CustomError("Internal server error", 500)
+    }
+
+    const user = await findUser(ctx.request.body.username);
     
     if (user){
         throw new CustomError("User already exists", 422)
     }
-       
-    const encryptedPass = await bcrypt.hash(inputData.password, 10);
-    
-    const newUser = await Users.query().insert({
-        username: ctx.request.body.username,
-        password: encryptedPass
-    })
-    
+
+    // add user
+    let newUser: Users
+
+    if (!ctx.request.body) {
+        throw new CustomError("Internal server error", 500)
+    }
+
+    newUser = await addUser(ctx.request.body)
+
     ctx.response.status = 201;
-    ctx.body = newUser
+
+    ctx.body = {
+        userId: newUser.id,
+        username: newUser.username,
+    }
 
 }
 
-export const loginUser = async (ctx: Context) => {
+export const loginUser = async (ctx: KoaContext<UserDataReq, LoginRes>) => {
 
-    const user = await Users.query().findOne({
-        username: ctx.request.body.username
-    });
+    if (!ctx.request.body) {
+        throw new CustomError("Internal server error", 500)
+    }
+
+    const user = await findUser(ctx.request.body.username);
 
     if (!user){
         throw new CustomError("Bad username", 401);
     }
+
+    const check = await checkPassword(ctx.request.body.password, user.password)
     
-    const compare = await bcrypt.compare(ctx.request.body.password, user.password);
     
-    if (compare){
+
+    if (check){
+        
+        const token = getToken(user.id) 
+
         ctx.response.status = 200;
-
-        const token = jwt.sign({
-            userId: user.id
-          }, "random-string", { expiresIn: "1d" });
-
         ctx.body = {
-            "token": token
+            userId: user.id,
+            username: user.username,
+            token: token
         }
 
     } else {

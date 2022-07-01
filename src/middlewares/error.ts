@@ -28,20 +28,22 @@ export const errorHandler = async (ctx: Context, next: () => Promise<any>) => {
 
         // custom errors
         if (err instanceof CustomError){
-            
+            ctx.response.status = err.statusCode
             ctx.body = {
-                "message":err.message
+                "message":err.message,
+                "status": err.statusCode
             }
             console.log(err)
 
         // unknown error
         } else if ( err instanceof Error){
-            
+            ctx.response.status = 500
             ctx.body = {
-                "messsage": "Internal server error"
+                "messsage": "Internal server error",
+                "status": 500
             }
             console.log(err.message)
-        
+            console.log(err.stack)
         }
         
     }

@@ -1,5 +1,5 @@
 import Router from 'koa-router';
-import { validate } from '../middlewares/validation'
+import { validateCreateCollection, validateAddStories} from '../middlewares/validation'
 import authenticate from '../middlewares/jwt_middleware'
 import { storiesSchema, collectionSchema } from '../validation/collections'
 import {
@@ -11,7 +11,8 @@ import {
     getCollection
     } from '../controllers/collection.controller'
 
-import {KoaContext,  KoaResponseContext} from '../types/koa_context'
+import {KoaContext} from '../types/types'
+import compose from 'koa-compose'
 
 const router = new Router({
     prefix: "/collections"
@@ -20,6 +21,7 @@ const router = new Router({
 /**
  * GET - TEST
  */
+
 
 router.get('/test', authenticate, async(ctx: KoaContext) => {
     ctx.response.status = 200;
@@ -30,7 +32,9 @@ router.get('/test', authenticate, async(ctx: KoaContext) => {
  * 
  */
 
-router.post('/', validate(collectionSchema), authenticate, createCollection)
+const middlewareCollection = compose([validateCreateCollection, authenticate])
+
+router.post('/', middlewareCollection, createCollection)
 
 /**
  * GET - get all collections for user
@@ -42,7 +46,7 @@ router.get('/', authenticate, listCollections)
  * PUT - update collection or create new
  */
 
-router.put('/', validate(collectionSchema), authenticate, changeCollection)
+router.put('/:id', middlewareCollection, changeCollection)
 
 /**
  * DELETE - collection by id
@@ -62,6 +66,8 @@ router.get('/:id', authenticate, getCollection)
  * 
  */
 
-router.post('/:id', validate(storiesSchema), authenticate, addStoriesToCollection)
+ const middlewareAddStories = compose([validateAddStories, authenticate])
+
+router.post('/:id', middlewareAddStories, addStoriesToCollection)
 
 export default router

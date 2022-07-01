@@ -6,9 +6,10 @@ const router = new Router({
     prefix: "/items"
 })
 
-router.get('/', async (ctx) => {
-    ctx.response.status = 200
-})
+
+/**
+ * GET - get information about item in user collections
+ */
 
 router.get('/:id', authenticate, getItem)
 

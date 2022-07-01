@@ -48,3 +48,18 @@ export const createItemStructure = async (items: Array<Items>): Promise<Array<Ge
 
     return itemArray
 }
+
+
+export const fillArray = <T extends { id: number}>(kids: T[]): Array<number> => {
+
+    let array: Array<number> = []
+
+    kids.forEach( (element: T) => {
+        if ('id' in element) {
+            array.push(element.id)
+        }
+    })
+
+    return array
+
+}

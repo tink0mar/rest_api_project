@@ -1,19 +1,94 @@
 import Collections from '../models/Collections'
+import Users from '../models/Users'
 import Items from '../models/Items'
+import { Item } from '../types/collections.types'
 import axios from 'axios'
-import { createTextChangeRange } from 'typescript';
 import { CustomError } from '../middlewares/error'
 
-interface Item {
-    id: number
-    by: string
-    time: number
-    type: string
-    title?: string
-    text?: string
-    parent?: number
-    kids: Array<number>
+/**
+ * Delete collection from DB
+ * @param id 
+ * @param collection 
+ */
+
+export const deleteCollectionFromDb = async (id: number, collection: Collections) => {
+
+    await collection.$relatedQuery('items').unrelate();
+
+    await Collections.query().delete().where({
+        id: id
+    })
+
 }
+
+/**
+ * Get collection from database by id and userId
+ * @param id 
+ * @param userId 
+ * @returns 
+ */
+export const getCollectionFromDb = async (id: number, userId: number): Promise<Collections|undefined> => {
+
+    return Collections.query().findOne({
+        id: id,
+        usersId: userId
+    });
+}
+
+export const getCollectionsFromDb = async (userId: number) => {
+
+    return Collections.query().select().where({
+        usersId: userId
+    });
+
+}
+
+/**
+ * Get user from Db
+ * @param id 
+ * @returns 
+ */
+export const getUserFromDb = async (id: number) => {
+
+    return Users.query().findOne({
+        id: id
+    })
+
+}
+
+/**
+ * Insert Collection to database
+ * @param user 
+ * @param name 
+ * @returns 
+ */
+export const insertCollectionInDb = async (user: Users, name: string): Promise<Collections> => {
+
+    const collection = await user.$relatedQuery('collections').insertAndFetch({
+        name: name 
+    }) as Collections
+    
+    return collection
+}
+
+export const updateCollectionInDb = async (id: number, name: string) => {
+
+    return Collections.query().update({
+        name: name
+    }).where('id', `${id}`).returning("*")  
+
+}
+
+export const getStoriesFromDb = async (collection: Collections) => {
+
+    const stories = await collection.$relatedQuery('items').select().where({
+        type: "story"
+    }) as Items[]
+
+    return stories
+
+}
+
 
 async function getIdsPromises(ids: Array<number>){
     const promiseArray = []
@@ -36,7 +111,7 @@ async function getIdsPromises(ids: Array<number>){
 
 
 
-export const addItems = async (collection: Collections, ids: Array<number>) => {
+export const addItems = async (collection: Collections, ids: Array<number>, flag: boolean) => {
     
     const result = await getIdsPromises(ids);
     
@@ -57,7 +132,7 @@ export const addItems = async (collection: Collections, ids: Array<number>) => {
             
             if (item.kids){
             
-                await addItems(collection, item.kids);
+                await addItems(collection, item.kids, false);
             
             }
 
@@ -66,7 +141,15 @@ export const addItems = async (collection: Collections, ids: Array<number>) => {
 
         // check if promise was succesfull
         if (item){
-        
+            
+            // if it was called from controller check if give ids are stories
+
+            if (flag){
+                if (item.type != "story"){
+                    throw new CustomError("Given id is not a story", 400);
+                } 
+            }
+
             await Items.query().insert({
                 id: item.id,
                 author: item.by,
@@ -92,7 +175,7 @@ export const addItems = async (collection: Collections, ids: Array<number>) => {
             await collection.$relatedQuery('items').relate(item);
             
             if (item.kids){
-                await addItems(collection, item.kids)
+                await addItems(collection, item.kids, false)
             }
 
         }

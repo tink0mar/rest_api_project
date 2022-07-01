@@ -1,9 +1,7 @@
 
 import { registerUser, loginUser} from '../controllers/user.controller'
 import Router from 'koa-router'
-import { validate } from '../middlewares/validation'
-
-import { userSchema } from '../validation/user'
+import { validateUser } from '../middlewares/validation'
 
 const router = new Router({
     prefix: '/users'
@@ -14,7 +12,7 @@ const router = new Router({
  * 
  */
 
-router.post('/register', validate(userSchema), registerUser);
+router.post('/register', validateUser, registerUser);
 
 /**
  * POST - login user to database
@@ -22,6 +20,6 @@ router.post('/register', validate(userSchema), registerUser);
  * get jwt token on return 
  */
 
-router.post('/login', validate(userSchema), loginUser);
+router.post('/login', validateUser , loginUser);
 
 export default router;

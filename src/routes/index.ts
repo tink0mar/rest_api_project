@@ -4,8 +4,11 @@ import usersRouter from './users.routes'
 import itemsRouter from './items.routes'
 
 const apiRouter = new Router({
-    prefix: "/hnnews-api"
+    prefix: "/hnnews"
 })
+
+
+// apend nested to routes to main router
 
 let nestedRoutes = [collectionsRouter, usersRouter, itemsRouter]
 

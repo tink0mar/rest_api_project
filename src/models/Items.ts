@@ -1,6 +1,8 @@
 import { Model } from 'objection'
 import Collections from './Collections'
 
+// Model class for Items
+
 export default class Items extends Model {
     id!: number
     content!: string

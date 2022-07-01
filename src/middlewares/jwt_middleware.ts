@@ -1,7 +1,7 @@
 import jwt, {JwtPayload} from 'jsonwebtoken';
 import { CustomError } from './error';
 import dotenv from 'dotenv'
-import type { KoaContext, Decoded} from '../types/koa_context';
+import type { KoaContext, Decoded} from '../types/types';
 import { Context } from 'koa'
 
 
@@ -9,15 +9,14 @@ dotenv.config();
 
 const authenticate = (ctx: KoaContext, next: () => Promise<any>) => {
     const token = ctx.request.token;
-  
     if (!token) {
         throw new CustomError("Token is required for authentication", 401)
     }
 
     try {
         
-        const decoded = jwt.verify(token, "random-string") as Decoded;
-        ctx.request.decoded = decoded;
+        const key = process.env.TOKEN_SECRET as string
+        ctx.decoded = jwt.verify(token, key) as Decoded;
 
         console.log("Authorized");
         return next();

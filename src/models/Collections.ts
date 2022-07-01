@@ -2,6 +2,8 @@ import { Model } from 'objection'
 import Users from './Users'
 import Items from './Items'
 
+// model class for Collections
+
 export default class Collections extends Model {
     id!: number
     usersId!: number
