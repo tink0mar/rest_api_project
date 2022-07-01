@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm run rollback && npm run migrate && ts-node node_modules/jasmine/bin/jasmine --random=false --config=./spec/support/jasmine.json",
     "coverage": "nyc -r text -e .ts -x \"tests/*.test.ts\" npm run test",
-    "start": "npm run rollback && npm run migrate && npx tsc &&node ./dist/app.js",
+    "start": "npm run rollback && npm run migrate && npx tsc &&node ./dist/src/app.js",
     "build-dist": "./node_modules/typescript/bin/tsc",
     "rollback": "knex --knexfile src/knexfile.ts migrate:rollback",
     "migrate": "knex --knexfile src/knexfile.ts migrate:latest"
